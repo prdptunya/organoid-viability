@@ -84,7 +84,9 @@ MIT License
 ---
 
 ## Author
-Peeradapath Parametphisit
+Monalisa Chakraborty
+Jyoti Verma
+Tanya Parametphisit
 
 ---
 
