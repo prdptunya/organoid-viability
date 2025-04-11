@@ -9,7 +9,7 @@ This repository provides code for segmenting microscopy images of droplets, quan
 ```
 .
 ├── Cropped_Droplets/             # Output directory for cropped droplet images and CSV file
-├── input/                        # input images directory
+├── input/                        # input images directory (too large to upload on Zepono or Github)
 ├── Organoids_BF.ipynb            # Original Colab notebook
 ├── assets/                       # Figures and image outputs for documentation
 ├── README.md                     # This file
