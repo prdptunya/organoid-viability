@@ -15,6 +15,59 @@ This repository provides code for segmenting microscopy images of droplets, quan
 ├── README.md                     # This file
 ```
 
+## ❓ Problem Statement
+
+In high-throughput microfluidic experiments, cancer cell organoids are cultured within isolated droplets. Assessing cell viability inside each droplet is a critical task for drug testing and biological assays, but traditional manual inspection of microscopy images is slow and error-prone. 
+
+This project aims to solve the problem by:
+- Automatically detecting droplets in microscopy images.
+- Quantifying the percent of dead cells using green fluorescence intensity.
+- Training a CNN model to predict droplet viability from image data, enabling rapid, automated assessment.
+
+---
+
+## 📦 The Data
+
+The dataset consists of:
+- Brightfield and fluorescence microscopy images (.tif, .png, etc.) of droplets.
+- Each droplet contains a 3D aggregate of cells (organoid).
+- Green fluorescence indicates dead cells; brightfield images represent total cell mass.
+- From each image, multiple droplets are extracted and labeled with their viability percentage based on the ratio of green signal to total cell signal.
+
+Preprocessing steps include:
+- Hough Circle Transform to detect droplets.
+- Binary masking to identify green fluorescence and cell areas.
+- Droplets with ≥0.1% dead cells are saved as 128×128 grayscale images.
+- Labels (% dead cells) are stored in a CSV file.
+
+Dataset Summary:
+- ~520 labeled droplet images (128×128 pixels) (will add more data set)
+- Labels: continuous values representing percent of dead cells
+
+---
+
+## 🤖 Algorithms Used
+
+### 1. **Droplet Detection and Viability Quantification**
+- **Image Preprocessing:** Grayscale conversion, inversion, blurring
+- **Hough Circle Transform:** Detect circular droplet regions
+- **Cell Area Detection:** Otsu thresholding and morphological closing on BF image
+- **Dead Cell Detection:** HSV filtering to isolate green fluorescence
+- **Viability Calculation:** Ratio of green area to total cell area per droplet
+
+### 2. **CNN Regression Model**
+- Input: 128×128 grayscale images of individual droplets
+- Output: Predicted percent of dead cells (log-scaled during training)
+- Loss function: Mean Squared Error (MSE)
+- Label transformation: `log1p(%dead / 100)` to stabilize learning
+
+CNN Architecture:
+```
+Conv2d(1→16) → ReLU → MaxPool2d
+Conv2d(16→32) → ReLU → MaxPool2d
+Flatten → Linear(32*32*32→128) → ReLU → Linear(128→1)
+```
+
 ---
 
 ## 🔧 Requirements
