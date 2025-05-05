@@ -494,7 +494,7 @@ plt.show()
 
 ![Training Droplets](assets/fig3_cropped_droplets.png)
 
-*Fig 2. Cropped droplets used as training input for the CNN model.*
+*Fig 2. Cropped droplets used as training input for the CNN and VIT model.*
 
 ![Loss Curve](assets/CNN_output.png)
 
