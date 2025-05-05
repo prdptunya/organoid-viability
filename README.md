@@ -492,15 +492,15 @@ plt.show()
 
 ![Training Droplets](assets/fig3_cropped_droplets.png)
 
-*Fig 3. Cropped droplets used as training input for the CNN model.*
+*Fig 4. Cropped droplets used as training input for the CNN model.*
 
-![Loss Curve](assets/fig4_loss_plot.png)
+![Loss Curve](assets/CNN outout.png)
 
-*Fig 4. Training and validation loss over 100 epochs.*
+*Fig 5. CNN output.*
 
-![Prediction Scatter](assets/fig5_pred_vs_actual.png)
+![Prediction Scatter](assets/VIT output.png)
 
-*Fig 5. Predicted vs actual % dead cells in the validation set.*
+*Fig 6. VIT outout.*
 
 ---
 
