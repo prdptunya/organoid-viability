@@ -62,6 +62,19 @@ Dataset Summary:
 - Loss function: Mean Squared Error (MSE)
 - Label transformation: `log1p(%dead / 100)` to stabilize learning
 
+### 3. Vision Transformer (ViT) Regression Models
+Three ViT-based architectures were tested for predicting % dead cells from droplet images.
+
+#### ViT
+- Backbone: `vit_base_patch16_224`, pretrained on ImageNet
+- Input: RGB images resized to 224×224
+- Output: Scalar regression of % dead (via MLP head)
+- Loss: MSE on log-transformed labels
+- Note: Minimal ViT pipeline for comparison.
+- Modifications:
+  - Final classification head replaced with regression head
+
+
 CNN Architecture:
 ```
 Conv2d(1→16) → ReLU → MaxPool2d
