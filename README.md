@@ -48,10 +48,8 @@ Dataset Summary:
 ---
 
 ## 🤖 Algorithms Used
-
 ![Training Droplets](assets/Final_project.png)
-
-*Fig 3. Project pipeline.*
+*Fig 1. Project pipeline.*
 
 ### 1. **Droplet Detection and Viability Quantification**
 - **Image Preprocessing:** Grayscale conversion, inversion, blurring
@@ -496,15 +494,15 @@ plt.show()
 
 ![Training Droplets](assets/fig3_cropped_droplets.png)
 
-*Fig 4. Cropped droplets used as training input for the CNN model.*
+*Fig 2. Cropped droplets used as training input for the CNN model.*
 
 ![Loss Curve](assets/CNN_output.png)
 
-*Fig 5. CNN output.*
+*Fig 3. CNN output.*
 
 ![Prediction Scatter](assets/VIT_output.png)
 
-*Fig 6. VIT outout.*
+*Fig 4. VIT outout.*
 
 ---
 
