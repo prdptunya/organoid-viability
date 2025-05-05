@@ -508,7 +508,7 @@ plt.show()
 - Trained model predicts viability from grayscale image input.
 - Model evaluation includes reverse log transformation to get back percent dead values.
 - Loss curve shows training vs. validation performance over 100 epochs.
-- 
+  
 #### 📌 CNN Regression Model
 - **Input**: 100×100 grayscale image
 - **Architecture**:
