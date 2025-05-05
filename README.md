@@ -65,6 +65,13 @@ Dataset Summary:
 ### 3. Vision Transformer (ViT) Regression Models
 Three ViT-based architectures were tested for predicting % dead cells from droplet images.
 
+CNN Architecture:
+```
+Conv2d(1→16) → ReLU → MaxPool2d
+Conv2d(16→32) → ReLU → MaxPool2d
+Flatten → Linear(32*32*32→128) → ReLU → Linear(128→1)
+```
+
 #### ViT
 - Backbone: `vit_base_patch16_224`, pretrained on ImageNet
 - Input: RGB images resized to 224×224
@@ -74,13 +81,6 @@ Three ViT-based architectures were tested for predicting % dead cells from dropl
 - Modifications:
   - Final classification head replaced with regression head
 
-
-CNN Architecture:
-```
-Conv2d(1→16) → ReLU → MaxPool2d
-Conv2d(16→32) → ReLU → MaxPool2d
-Flatten → Linear(32*32*32→128) → ReLU → Linear(128→1)
-```
 
 ---
 
