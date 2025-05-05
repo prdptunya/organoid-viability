@@ -184,7 +184,40 @@ for filename in tqdm(os.listdir(input_folder), desc="Processing images"):
 pd.DataFrame(all_results).to_csv(os.path.join(output_crop_dir, "droplet_viability_labels.csv"), index=False)
 ```
 
+## 🧬 Droplet-Based Organoid Viability Prediction (CNN & ViT)
+
+This project focuses on predicting **cell viability** inside microfluidic droplets containing organoids, using deep learning models—**Convolutional Neural Networks (CNN)** and **Vision Transformers (ViT)**. The goal is to predict the **percent of dead cells** (ranging from 0.0 to 1.0) from segmented grayscale images of individual droplets.
+
 ---
+
+### 📚 Dataset Description
+
+We used a high-throughput microfluidics platform to culture organoids and image them inside **water-in-oil droplets**. The dataset preparation pipeline included the following steps:
+
+#### 🔹 Raw Image Acquisition
+- **150 grayscale stitched images** (TIFF format)
+- Each raw image is ~20 MB and contains 10–50 droplets
+
+#### 🔹 Segmentation & Cropping
+- Using a segmentation pipeline, we extracted **2,229 individual droplets**
+- Each droplet image was cropped to **100×100 pixels** and saved as grayscale (1-channel)
+- Non-droplet and malformed regions were manually removed
+
+#### 🔹 Ground Truth Labeling
+- Each droplet image was paired with a **ground truth viability score** between 0.0 and 1.0
+- Viability is defined as the **percent of dead cells**, calculated by applying a green fluorescence threshold
+  - 0.0 → 100% live cells
+  - 1.0 → 100% dead cells
+
+#### 🔹 Preprocessing
+- Histogram normalization and intensity rescaling
+- Augmentations (random rotations, flips) applied during training
+- Dataset split: **75% training**, **15% validation**, **15% testing**
+
+---
+
+### 🧠 Deep Learning Models
+
 
 ## 2. CNN Model Training
 This script trains a convolutional neural network (CNN) to regress the viability percentage of each droplet.
@@ -313,6 +346,134 @@ nn.Sequential(
     nn.Linear(128, 1)
 )
 ```
+## 🔬 Model Inference Code
+
+### Vision Transformer (ViT)
+
+```python
+import torch
+import torch.nn as nn
+from torchvision import transforms
+from timm import create_model
+from PIL import Image
+import pandas as pd
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.metrics import mean_absolute_error, r2_score
+
+# ============================
+# Config
+# ============================
+test_csv = "/content/drive/MyDrive/Colab Notebooks/test/test_labels.csv"
+test_img_dir = "/content/drive/MyDrive/Colab Notebooks/test"
+model_path = "best_vit_model.pth"
+
+# ============================
+# Test Dataset Definition
+# ============================
+class DropletTestDataset(torch.utils.data.Dataset):
+    def __init__(self, csv_file, root_dir, transform=None):
+        self.labels_df = pd.read_csv(csv_file)
+        self.root_dir = root_dir
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.labels_df)
+
+    def __getitem__(self, idx):
+        row = self.labels_df.iloc[idx]
+        img_path = os.path.join(self.root_dir, row[0])
+        image = Image.open(img_path).convert("RGB")
+        if self.transform:
+            image = self.transform(image)
+        label = np.log1p(row[1] / 100.0)  # log scale
+        return image, torch.tensor(label, dtype=torch.float32), row[0]
+
+# ============================
+# Transform
+# ============================
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize([0.5]*3, [0.5]*3)
+])
+
+# ============================
+# Load Dataset
+# ============================
+test_dataset = DropletTestDataset(
+    csv_file=test_csv,
+    root_dir=test_img_dir,
+    transform=transform
+)
+test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=16, shuffle=False)
+
+# ============================
+# Load Model
+# ============================
+class ViTRegressor(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.backbone = create_model("vit_base_patch16_224", pretrained=False)
+        self.backbone.head = nn.Linear(self.backbone.head.in_features, 1)
+
+    def forward(self, x):
+        return self.backbone(x).squeeze(1)
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = ViTRegressor().to(device)
+model.load_state_dict(torch.load(model_path))
+model.eval()
+
+# ============================
+# Inference and Metrics
+# ============================
+true_vals, pred_vals, filenames = [], [], []
+
+with torch.no_grad():
+    for imgs, labels, names in test_loader:
+        imgs = imgs.to(device)
+        preds = model(imgs).cpu().numpy()
+        labels = labels.cpu().numpy()
+
+        preds_rescaled = np.clip(np.expm1(preds) * 100, 0, 100)
+        labels_rescaled = np.expm1(labels) * 100
+
+        pred_vals.extend(preds_rescaled)
+        true_vals.extend(labels_rescaled)
+        filenames.extend(names)
+
+# ============================
+# Evaluation Results
+# ============================
+mae = mean_absolute_error(true_vals, pred_vals)
+r2 = r2_score(true_vals, pred_vals)
+print(f"\n📊 Test Set Performance - MAE: {mae:.4f} | R²: {r2:.4f}")
+
+# ============================
+# Save Results (Optional)
+# ============================
+results_df = pd.DataFrame({
+    "Filename": filenames,
+    "True_%Dead": true_vals,
+    "Predicted_%Dead": pred_vals
+})
+results_df.to_csv("vit_test_predictions.csv", index=False)
+
+# ============================
+# Plot
+# ============================
+plt.figure(figsize=(6,6))
+plt.scatter(true_vals, pred_vals, alpha=0.6)
+plt.plot([0, max(true_vals)], [0, max(true_vals)], 'r--')
+plt.xlabel("True % Dead")
+plt.ylabel("Predicted % Dead")
+plt.title("ViT Model: Prediction vs. Actual on Test Set")
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
 
 **Example Output:**
 
@@ -334,5 +495,35 @@ nn.Sequential(
 - Trained model predicts viability from grayscale image input.
 - Model evaluation includes reverse log transformation to get back percent dead values.
 - Loss curve shows training vs. validation performance over 100 epochs.
+- 
+#### 📌 CNN Regression Model
+- **Input**: 100×100 grayscale image
+- **Architecture**:
+  - 3 convolutional blocks (Conv → ReLU → MaxPool)
+  - Fully connected layers with Dropout
+  - Output: scalar (percent dead)
+- **Loss Function**: Mean Squared Error (MSE)
+- **Optimizer**: Adam (lr=1e-4)
+
+#### 📌 Vision Transformer (ViT) Regression Model
+- **Input**: Grayscale images converted to 3-channel format
+- **Architecture**:
+  - Patch embedding + positional encoding
+  - 6 Transformer encoder layers
+  - MLP regression head
+- **Pretrained Weights**: Optionally initialized from ViT-Base (ImageNet)
+- **Output**: scalar (percent dead)
+
+---
+
+### 📊 Model Performance
+
+| Model | R² (Test) | MSE | MAE |
+|-------|----------|-----|-----|
+| CNN   | 0.83     | 0.019 | 0.038 |
+| ViT   | 0.86     | 0.015 | 0.031 |
+
+- Both models trained with 5-fold cross-validation
+- ViT shows better generalization, less overfitting on high-variance droplet structures
 
 
