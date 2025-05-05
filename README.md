@@ -473,7 +473,7 @@ plt.title("ViT Model: Prediction vs. Actual on Test Set")
 plt.grid(True)
 plt.tight_layout()
 plt.show()
-'''
+```
 
 **Example Output:**
 
