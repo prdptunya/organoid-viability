@@ -42,7 +42,7 @@ Preprocessing steps include:
 - Labels (% dead cells) are stored in a CSV file.
 
 Dataset Summary:
-- ~520 labeled droplet images (128×128 pixels) (will add more data set)
+- 2229 labeled droplet images (128×128 pixels) (will add more data set)
 - Labels: continuous values representing percent of dead cells
 
 ---
