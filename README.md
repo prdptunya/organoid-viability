@@ -346,9 +346,9 @@ nn.Sequential(
     nn.Linear(128, 1)
 )
 ```
-## 🔬 Model Inference Code
 
-### Vision Transformer (ViT)
+
+## 3.Vision Transformer (ViT)
 
 ```python
 import torch
@@ -473,7 +473,7 @@ plt.title("ViT Model: Prediction vs. Actual on Test Set")
 plt.grid(True)
 plt.tight_layout()
 plt.show()
-
+'''
 
 **Example Output:**
 
